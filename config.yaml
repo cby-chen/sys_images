@@ -1,0 +1,49 @@
+last: 5
+images:
+  docker.elastic.co:
+    - elasticsearch/elasticsearch
+    - kibana/kibana
+    - logstash/logstash
+    - beats/filebeat
+    - beats/heartbeat
+    - beats/packetbeat
+    - beats/auditbeat
+    - beats/journalbeat
+    - beats/metricbeat
+    - apm/apm-server
+    - app-search/app-search
+  quay.io:
+    - coreos/flannel
+    - ceph/ceph
+    - cephcsi/cephcsi
+    - csiaddons/k8s-sidecar
+    - csiaddons/volumereplication-operator
+    - prometheus/prometheus
+    - prometheus/alertmanager
+    - prometheus/pushgateway
+    - prometheus/blackbox-exporter
+    - prometheus/node-exporter
+    - prometheus-operator/prometheus-config-reloader
+    - prometheus-operator/prometheus-operator
+    - brancz/kube-rbac-proxy
+  k8s.gcr.io:
+    - etcd
+    - kube-proxy
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+    - coredns/coredns
+    - dns/k8s-dns-node-cache
+    - metrics-server/metrics-server
+    - ingress-nginx/controller
+    - ingress-nginx/kube-webhook-certgen
+    - kube-state-metrics/kube-state-metrics
+    - prometheus-adapter/prometheus-adapter
+    - sig-storage/nfs-subdir-external-provisioner
+    - sig-storage/csi-node-driver-registrar
+    - sig-storage/csi-provisioner
+    - sig-storage/csi-resizer
+    - sig-storage/csi-snapshotter
+    - sig-storage/csi-attacher
+  gcr.io:
+    - kaniko-project/executor
