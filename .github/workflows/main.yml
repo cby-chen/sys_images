@@ -1,0 +1,47 @@
+name: sync
+
+on:
+  push:
+    branches: [ master ]
+  schedule:
+    - cron:  '0 */8 * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  sync-aliyun:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        . /etc/os-release
+        echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+        curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key | sudo apt-key add -
+        sudo apt-get update
+        sudo apt-get -y upgrade
+        sudo apt-get -y install skopeo
+        skopeo --version
+    - name: generate_sync_yaml
+      timeout-minutes: 10
+      run: |
+        python generate_sync_yaml.py
+    
+    - name: sync image
+      env:
+        HUB_USERNAME: ${{ secrets.HUB_USERNAME }}
+        HUB_PASSWORD: ${{ secrets.HUB_PASSWORD }}
+      run: |
+        bash sync.sh
