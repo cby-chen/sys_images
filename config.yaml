@@ -28,6 +28,7 @@ images:
     - brancz/kube-rbac-proxy
   k8s.gcr.io:
     - etcd
+    - pause
     - kube-proxy
     - kube-apiserver
     - kube-scheduler
