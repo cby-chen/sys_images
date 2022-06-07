@@ -48,4 +48,3 @@ images:
     - sig-storage/csi-attacher
   gcr.io:
     - kaniko-project/executor
-    - google-samples/xtrabackup
