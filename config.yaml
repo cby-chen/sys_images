@@ -1,5 +1,10 @@
 last: 5
 images:
+  docker.io:
+    - calico/typha
+    - calico/cni
+    - calico/node
+    - calico/kube-controllers
   docker.elastic.co:
     - elasticsearch/elasticsearch
     - kibana/kibana
