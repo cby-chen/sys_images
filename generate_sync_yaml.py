@@ -173,6 +173,55 @@ def get_repo_quay_tags(image, limit=5):
     return tags
 
 
+def get_repo_docker_tags(image, limit=5):
+    """
+    获取 docker.io repo 最新的 tag
+    :param image:
+    :param limit:
+    :return:
+    """
+    tag_url = "https://registry.hub.docker.com/v1/repositories/{image}/tag/?onlyActiveTags=true&limit=100".format(image=image)
+
+    tags = []
+    tags_data = []
+    manifest_data = []
+
+    try:
+        tag_rep = requests.get(url=tag_url)
+        tag_req_json = tag_rep.json()
+        manifest_data = tag_req_json['tags']
+    except Exception as e:
+        print('[Get tag Error]', e)
+        return tags
+
+    for manifest in manifest_data:
+        name = manifest.get('name', '')
+
+        # 排除 tag
+        if is_exclude_tag(name):
+            continue
+
+        tags_data.append({
+            'tag': name,
+            'start_ts': manifest.get('start_ts')
+        })
+
+    tags_sort_data = sorted(tags_data, key=lambda i: i['start_ts'], reverse=True)
+
+    # limit tag
+    tags_limit_data = tags_sort_data[:limit]
+
+    image_aliyun_tags = get_repo_aliyun_tags(image)
+    for t in tags_limit_data:
+        # 去除同步过的
+        if t['tag'] in image_aliyun_tags:
+            continue
+
+        tags.append(t['tag'])
+
+    print('[repo tag]', tags)
+    return tags
+
 def get_repo_elastic_tags(image, limit=5):
     """
     获取 elastic.io repo 最新的 tag
@@ -250,6 +299,8 @@ def get_repo_tags(repo, image, limit=5):
         tags_data = get_repo_quay_tags(image, limit)
     elif repo == 'docker.elastic.co':
         tags_data = get_repo_elastic_tags(image, limit)
+    elif repo == 'docker.io':
+        tags_data = get_repo_docker_tags(image, limit)
     return tags_data
 
 
