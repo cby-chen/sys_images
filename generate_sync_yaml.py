@@ -189,7 +189,6 @@ def get_repo_docker_tags(image, limit=5):
     try:
         tag_rep = requests.get(url=tag_url)
         tag_req_json = tag_rep.json()
-        manifest_data = tag_req_json['tags']
     except Exception as e:
         print('[Get tag Error]', e)
         return tags
