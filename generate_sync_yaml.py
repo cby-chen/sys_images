@@ -180,7 +180,7 @@ def get_repo_docker_tags(image, limit=5):
     :param limit:
     :return:
     """
-    tag_url = "https://registry.hub.docker.com/v1/repositories/{image}/tag/?onlyActiveTags=true&limit=100".format(image=image)
+    tag_url = "https://registry.hub.docker.com/v1/repositories/{image}/tags".format(image=image)
 
     tags = []
     tags_data = []
@@ -189,11 +189,12 @@ def get_repo_docker_tags(image, limit=5):
     try:
         tag_rep = requests.get(url=tag_url)
         tag_req_json = tag_rep.json()
+        # manifest_data = tag_req_json['tags']
     except Exception as e:
         print('[Get tag Error]', e)
         return tags
 
-    for manifest in manifest_data:
+    for manifest in tags_data:
         name = manifest.get('name', '')
 
         # 排除 tag
@@ -384,6 +385,7 @@ def generate_custom_conf():
         yaml.safe_dump(custom_skopeo_sync_data, f, default_flow_style=False)
 
     print('[generate_custom_conf] done.', end='\n\n')
+
 
 
 generate_dynamic_conf()
