@@ -63,6 +63,7 @@ https://github.com/cby-chen/sys_images
     - sig-storage/csi-resizer
     - sig-storage/csi-snapshotter
     - sig-storage/csi-attacher
+    - sig-storage/nfsplugin
   gcr.io:
     - kaniko-project/executor
     
