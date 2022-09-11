@@ -44,6 +44,8 @@ https://github.com/cby-chen/sys_images
     - prometheus-operator/prometheus-config-reloader
     - prometheus-operator/prometheus-operator
     - brancz/kube-rbac-proxy
+    - cilium/cilium
+    - cilium/operator-generic
   k8s.gcr.io:
     - etcd
     - kube-proxy
