@@ -1,4 +1,4 @@
-last: 5
+last: 1000
 images:
   docker.io:
     - calico/typha
