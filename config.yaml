@@ -33,6 +33,7 @@ images:
     - brancz/kube-rbac-proxy
     - cilium/cilium
     - cilium/operator-generic
+    - thanos/thanos
   k8s.gcr.io:
     - etcd
     - pause
