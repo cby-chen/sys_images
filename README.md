@@ -46,8 +46,20 @@ https://github.com/cby-chen/sys_images
     - brancz/kube-rbac-proxy
     - cilium/cilium
     - cilium/operator-generic
+    - thanos/thanos
+    - cilium/certgen
+    - cilium/hubble-relay
+    - cilium/hubble-ui-backend
+    - cilium/hubble-ui
+    - cilium/cilium-etcd-operator
+    - cilium/operator
+    - cilium/startup-script
+    - cilium/clustermesh-apiserver
+    - coreos/etcd
+        
   k8s.gcr.io:
     - etcd
+    - pause
     - kube-proxy
     - kube-apiserver
     - kube-scheduler
@@ -68,6 +80,7 @@ https://github.com/cby-chen/sys_images
     - sig-storage/nfsplugin
   gcr.io:
     - kaniko-project/executor
+    - google-samples/xtrabackup
     
 ```
 
