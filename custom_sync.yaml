@@ -8,3 +8,13 @@ k8s.gcr.io:
      - '3.4.1'
      - '3.3'
      - '3.7'
+    defaultbackend-amd64: 
+     - '1.5'
+
+gcr.io:
+  images:
+    kaniko-project/executor: 
+     - 'latest'
+     - 'v1.8.1'
+     - 'debug'
+     - 'v1.8.1-debug'
