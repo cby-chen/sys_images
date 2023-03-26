@@ -1,10 +1,5 @@
 last: 1000
 images:
-  docker.io:
-    - calico/typha
-    - calico/cni
-    - calico/node
-    - calico/kube-controllers
   docker.elastic.co:
     - elasticsearch/elasticsearch
     - kibana/kibana
@@ -43,19 +38,9 @@ images:
     - cilium/startup-script
     - cilium/clustermesh-apiserver
     - coreos/etcd
-        
   k8s.gcr.io:
-    - etcd
-    - pause
-    - kube-proxy
-    - kube-apiserver
-    - kube-scheduler
-    - kube-controller-manager
-    - coredns/coredns
     - dns/k8s-dns-node-cache
     - metrics-server/metrics-server
-    - ingress-nginx/controller
-    - ingress-nginx/kube-webhook-certgen
     - kube-state-metrics/kube-state-metrics
     - prometheus-adapter/prometheus-adapter
     - sig-storage/nfs-subdir-external-provisioner
@@ -65,6 +50,25 @@ images:
     - sig-storage/csi-snapshotter
     - sig-storage/csi-attacher
     - sig-storage/nfsplugin
+  registry.k8s.io:
+    - pause
+    - etcd
+    - conformance
+    - kube-proxy
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+    - coredns/coredns
+    - ingress-nginx/controller
+    - ingress-nginx/controller-chroot
+    - ingress-nginx/kube-webhook-certgen
   gcr.io:
     - kaniko-project/executor
     - google-samples/xtrabackup
+  docker.io:
+    - calico/node
+    - calico/typha
+    - calico/cni
+    - calico/node
+    - calico/kube-controllers
+    - calico/pod2daemon-flexvol
