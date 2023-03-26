@@ -56,19 +56,9 @@ https://github.com/cby-chen/sys_images
     - cilium/startup-script
     - cilium/clustermesh-apiserver
     - coreos/etcd
-        
   k8s.gcr.io:
-    - etcd
-    - pause
-    - kube-proxy
-    - kube-apiserver
-    - kube-scheduler
-    - kube-controller-manager
-    - coredns/coredns
     - dns/k8s-dns-node-cache
     - metrics-server/metrics-server
-    - ingress-nginx/controller
-    - ingress-nginx/kube-webhook-certgen
     - kube-state-metrics/kube-state-metrics
     - prometheus-adapter/prometheus-adapter
     - sig-storage/nfs-subdir-external-provisioner
@@ -78,10 +68,28 @@ https://github.com/cby-chen/sys_images
     - sig-storage/csi-snapshotter
     - sig-storage/csi-attacher
     - sig-storage/nfsplugin
+  registry.k8s.io:
+    - pause
+    - etcd
+    - conformance
+    - kube-proxy
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+    - coredns/coredns
+    - ingress-nginx/controller
+    - ingress-nginx/controller-chroot
+    - ingress-nginx/kube-webhook-certgen
   gcr.io:
     - kaniko-project/executor
     - google-samples/xtrabackup
-    
+  docker.io:
+    - calico/node
+    - calico/typha
+    - calico/cni
+    - calico/node
+    - calico/kube-controllers
+    - calico/pod2daemon-flexvol
 ```
 
 # 使用方式
@@ -97,6 +105,10 @@ k8s.gcr.io/{image_name}  ==>  registry.cn-hangzhou.aliyuncs.com/chenby/{image_na
 ```
 docker pull registry.cn-hangzhou.aliyuncs.com/chenby/kube-scheduler:[镜像版本号]
 ```
+
+# 声明
+此仓库基于  https://github.com/lework/sync_image  修改得来
+
 
 > **关于**
 >
