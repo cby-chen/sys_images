@@ -48,7 +48,7 @@ def get_repo_aliyun_tags(image):
     hearders = {
         'User-Agent': 'docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/5.8.0-1.el7.elrepo.x86_64 os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \(linux\))'
     }
-    token_url = "https://dockerauth.cn-hangzhou.aliyuncs.com/auth?scope=repository:kainstall/{image}:pull&service=registry.aliyuncs.com:cn-hangzhou:26842".format(
+    token_url = "https://dockerauth.cn-hangzhou.aliyuncs.com/auth?scope=repository:chenby/{image}:pull&service=registry.aliyuncs.com:cn-hangzhou:26842".format(
         image=image_name)
     try:
         token_res = requests.get(url=token_url, headers=hearders)
@@ -58,7 +58,7 @@ def get_repo_aliyun_tags(image):
         print('[Get repo token]', e)
         return tags
 
-    tag_url = "https://registry.cn-hangzhou.aliyuncs.com/v2/kainstall/{image}/tags/list".format(image=image_name)
+    tag_url = "https://registry.cn-hangzhou.aliyuncs.com/v2/chenby/{image}/tags/list".format(image=image_name)
     hearders['Authorization'] = 'Bearer ' + access_token
 
     try:
