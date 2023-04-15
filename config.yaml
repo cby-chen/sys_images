@@ -62,6 +62,7 @@ images:
     - ingress-nginx/controller
     - ingress-nginx/controller-chroot
     - ingress-nginx/kube-webhook-certgen
+    - cpa/cluster-proportional-autoscaler
   gcr.io:
     - kaniko-project/executor
     - google-samples/xtrabackup
