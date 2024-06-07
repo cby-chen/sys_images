@@ -27,12 +27,16 @@ images:
     - prometheus-operator/prometheus-operator
     - brancz/kube-rbac-proxy
     - cilium/cilium
+    - cilium/tetragon
+    - cilium/operator
     - cilium/operator-generic
     - thanos/thanos
     - cilium/certgen
     - cilium/hubble-relay
+    - cilium/hubble-ui
     - cilium/hubble-ui-backend
     - cilium/hubble-ui
+    - cilium/cilium-envoy
     - cilium/cilium-etcd-operator
     - cilium/operator
     - cilium/startup-script
@@ -62,8 +66,16 @@ images:
     - ingress-nginx/controller
     - ingress-nginx/controller-chroot
     - ingress-nginx/kube-webhook-certgen
-    - cpa/cluster-proportional-autoscaler
-    - autoscaling/addon-resizer
+    - metrics-server/metrics-server
+    - dns/k8s-dns-node-cache
+    - sig-storage/nfs-subdir-external-provisioner
+    - sig-storage/csi-node-driver-registrar
+    - sig-storage/csi-provisioner
+    - sig-storage/csi-resizer
+    - sig-storage/csi-snapshotter
+    - sig-storage/csi-attacher
+    - kube-state-metrics/kube-state-metrics
+    - prometheus-adapter/prometheus-adapter
   gcr.io:
     - kaniko-project/executor
     - google-samples/xtrabackup
@@ -71,6 +83,11 @@ images:
     - calico/node
     - calico/typha
     - calico/cni
-    - calico/node
     - calico/kube-controllers
     - calico/pod2daemon-flexvol
+    - flannel/flannel
+    - flannel/flannel-cni-plugin
+  ghcr.io:
+    - coroot/coroot
+    - coroot/coroot-cluster-agent
+    - coroot/coroot-node-agent
