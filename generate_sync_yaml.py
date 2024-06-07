@@ -17,22 +17,21 @@ def is_exclude_tag(tag):
     :param tag:
     :return:
     """
-    excludes = ['alpha', 'beta', 'rc', 'dev', 'test', 'amd64', 'ppc64le', 'arm64', 'arm', 's390x', 'SNAPSHOT', 'debug', 'master', 'latest', 'main']
+    excludes = ['alpha', 'beta', 'rc', 'dev', 'test', 'amd64', 'ppc64le', 'arm64', 'arm', 's390x', 'SNAPSHOT', 'debug', 'main']
 
     for e in excludes:
         if e.lower() in tag.lower():
             return True
-        if str.isalpha(tag):
-            return True
+        # if str.isalpha(tag):
+            # return True
         if len(tag) >= 40:
             return True
         
     # 处理带有 - 字符的 tag
     if re.search("-\d$", tag, re.M | re.I):
         return False
-    # v20231011-8b53cabe0
     if re.search("-\w{9}", tag, re.M | re.I):
-        return False
+        return True
     if '-' in tag:
         return True
     
@@ -313,7 +312,7 @@ def get_docker_io_tags(image, limit=5):
         'docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/5.8.0-1.el7.elrepo.x86_64 os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \(linux\))'
     }
     namespace_image = image.split('/')
-    tag_url = "https://hub.docker.com/v2/namespaces/{username}/repositories/{image}/tags".format(
+    tag_url = "https://hub.docker.com/v2/namespaces/{username}/repositories/{image}/tags?page=1&page_size=1000".format(
         username=namespace_image[0], image=namespace_image[1])
     print(tag_url)
 
@@ -345,9 +344,8 @@ def get_docker_io_tags(image, limit=5):
     image_aliyun_tags = get_repo_aliyun_tags(namespace_image[1])
     for t in tags_limit_data:
         # 去除同步过的
-        if t in image_aliyun_tags:
+        if t == '':
             continue
-
         tags.append(t)
     return tags
 
