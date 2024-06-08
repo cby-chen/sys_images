@@ -2,14 +2,9 @@
 
 # 背景
 
-
-
 在安装kubernetes时会出现无法访问镜像站的情况，通过GitHub将kubernetes镜像推送到阿里云之后，即可使用阿里云地址引用所需镜像，现已同步镜像5000+，当前还在陆续同步。
 
-
-
 # 代码仓库
-
 
 https://github.com/cby-chen/sys_images
 若有需要自行研究 后续更新会在仓库更新
@@ -18,6 +13,7 @@ https://github.com/cby-chen/sys_images
 # 目前有如下镜像仓库，后续会陆续增加
 
 ```
+images:
   docker.elastic.co:
     - elasticsearch/elasticsearch
     - kibana/kibana
@@ -45,12 +41,16 @@ https://github.com/cby-chen/sys_images
     - prometheus-operator/prometheus-operator
     - brancz/kube-rbac-proxy
     - cilium/cilium
+    - cilium/tetragon
+    - cilium/operator
     - cilium/operator-generic
     - thanos/thanos
     - cilium/certgen
     - cilium/hubble-relay
+    - cilium/hubble-ui
     - cilium/hubble-ui-backend
     - cilium/hubble-ui
+    - cilium/cilium-envoy
     - cilium/cilium-etcd-operator
     - cilium/operator
     - cilium/startup-script
@@ -80,6 +80,16 @@ https://github.com/cby-chen/sys_images
     - ingress-nginx/controller
     - ingress-nginx/controller-chroot
     - ingress-nginx/kube-webhook-certgen
+    - metrics-server/metrics-server
+    - dns/k8s-dns-node-cache
+    - sig-storage/nfs-subdir-external-provisioner
+    - sig-storage/csi-node-driver-registrar
+    - sig-storage/csi-provisioner
+    - sig-storage/csi-resizer
+    - sig-storage/csi-snapshotter
+    - sig-storage/csi-attacher
+    - kube-state-metrics/kube-state-metrics
+    - prometheus-adapter/prometheus-adapter
   gcr.io:
     - kaniko-project/executor
     - google-samples/xtrabackup
@@ -87,23 +97,29 @@ https://github.com/cby-chen/sys_images
     - calico/node
     - calico/typha
     - calico/cni
-    - calico/node
     - calico/kube-controllers
     - calico/pod2daemon-flexvol
+    - flannel/flannel
+    - flannel/flannel-cni-plugin
+  ghcr.io:
+    - coroot/coroot
+    - coroot/coroot-cluster-agent
+    - coroot/coroot-node-agent
 ```
 
 # 使用方式
 
 ```
-docker.elastic.co/kibana/{image_name}  ==>  registry.cn-hangzhou.aliyuncs.com/chenby/{image_name}
-quay.io/csiaddons/{image_name}  ==>  registry.cn-hangzhou.aliyuncs.com/chenby/{image_name}
-k8s.gcr.io/{image_name}  ==>  registry.cn-hangzhou.aliyuncs.com/chenby/{image_name}
+docker.elastic.co/kibana/[镜像名称]:[版本版本号]  ==>  registry.aliyuncs.com/chenby/[镜像名称]:[版本版本号]
+quay.io/csiaddons/[镜像名称]:[版本版本号]  ==>  registry.aliyuncs.com/chenby/[镜像名称]:[版本版本号]
+k8s.gcr.io/[镜像名称]:[版本版本号]  ==>  registry.aliyuncs.com/chenby/[镜像名称]:[版本版本号]
 ....
 ```
 
 # 拉去镜像
 ```
-docker pull registry.cn-hangzhou.aliyuncs.com/chenby/kube-scheduler:[镜像版本号]
+registry.aliyuncs.com/chenby/[镜像名称]:[版本版本号]
+registry.aliyuncs.com/chenby/kube-apiserver:v1.30.1
 ```
 
 # 声明
