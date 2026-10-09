@@ -204,7 +204,8 @@ sync_one_image() {
     local image_log
 
     source="docker://${registry}/${image}:${tag}"
-    target="docker://${HUB}/${REPO}/${image}:${tag}"
+    # target="docker://${HUB}/${REPO}/${image}:${tag}"
+    target="docker://${HUB}/${REPO}/${image#*/}:${tag}"
 
     image_log="${LOG_DIR}/$(echo "${registry}_${image}_${tag}" | sed 's#[/:]#_#g').log"
 
