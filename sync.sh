@@ -20,10 +20,10 @@ RETRY_COUNT=3
 # 每次重试之间等待时间
 RETRY_WAIT=10
 
-# 是否同步所有架构
-# 1 = 是，相当于原来的 -a
-# 0 = 否
-SYNC_ALL_ARCH=true
+# 要同步的 Linux 平台。仅复制这些架构，避免把上游镜像索引中的 OCI
+# attestation / artifact 等非运行时条目一并推送到不兼容的 ACR。
+# 默认保留常见的 amd64 和 arm64；可按需求调整。
+SYNC_PLATFORMS="linux/amd64,linux/arm64"
 
 # 日志目录
 LOG_DIR="/tmp/sys_images_sync"
@@ -88,7 +88,14 @@ check_environment() {
     log "[INFO] repo    : ${REPO}"
     log "[INFO] timeout : ${IMAGE_TIMEOUT}s"
     log "[INFO] retry   : ${RETRY_COUNT}"
+    log "[INFO] platforms: ${SYNC_PLATFORMS}"
     log "[INFO] log     : ${LOG_FILE}"
+
+    # 方案 A 需要新版 Skopeo 的平台筛选参数，提前检查，避免运行到一半才失败。
+    if ! "${SKOPEO}" copy --help 2>&1 | grep -q -- "--multi-arch"; then
+        log "[ERROR] Installed Skopeo does not support --multi-arch. Please upgrade it."
+        exit 1
+    fi
 }
 
 
@@ -224,32 +231,20 @@ sync_one_image() {
 
         : > "${image_log}"
 
-        if [ "${SYNC_ALL_ARCH}" = true ]; then
-
-            timeout \
-                --foreground \
-                "${IMAGE_TIMEOUT}" \
-                sudo "${SKOPEO}" \
-                --insecure-policy \
-                copy \
-                --all \
-                "${source}" \
-                "${target}" \
-                >>"${image_log}" 2>&1
-
-        else
-
-            timeout \
-                --foreground \
-                "${IMAGE_TIMEOUT}" \
-                sudo "${SKOPEO}" \
-                --insecure-policy \
-                copy \
-                "${source}" \
-                "${target}" \
-                >>"${image_log}" 2>&1
-
-        fi
+        # 只同步指定平台，并从最终 manifest list 中移除未复制的平台。
+        # 修改 manifest list 后需移除 list signature，否则签名校验会失败。
+        timeout \
+            --foreground \
+            "${IMAGE_TIMEOUT}" \
+            sudo "${SKOPEO}" \
+            --insecure-policy \
+            copy \
+            --multi-arch="${SYNC_PLATFORMS}" \
+            --strip-removed-platforms \
+            --remove-list-signatures \
+            "${source}" \
+            "${target}" \
+            >>"${image_log}" 2>&1
 
         ret=$?
 
