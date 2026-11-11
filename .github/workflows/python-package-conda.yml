@@ -11,6 +11,8 @@ on:
 jobs:
   sync-aliyun:
 
+    # Prevent a stalled sync from occupying a GitHub-hosted runner indefinitely.
+    timeout-minutes: 240
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -40,6 +42,7 @@ jobs:
         python generate_sync_yaml.py
     
     - name: sync image
+      timeout-minutes: 210
       env:
         HUB_USERNAME: ${{ secrets.HUB_USERNAME }}
         HUB_PASSWORD: ${{ secrets.HUB_PASSWORD }}

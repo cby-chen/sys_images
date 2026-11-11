@@ -11,8 +11,11 @@ REPO="chenby"
 
 SKOPEO="/tmp/skopeo"
 
-# 单个镜像最大运行时间：30 分钟
+# 单个镜像同步最大运行时间：30 分钟
 IMAGE_TIMEOUT=1800
+
+# 上游 Manifest / 架构检测最大等待时间：90 秒
+INSPECT_TIMEOUT=90
 
 # 单个镜像最大重试次数
 RETRY_COUNT=3
@@ -85,8 +88,9 @@ check_environment() {
     log "[INFO] skopeo  : ${SKOPEO}"
     log "[INFO] registry: ${HUB}"
     log "[INFO] repo    : ${REPO}"
-    log "[INFO] timeout : ${IMAGE_TIMEOUT}s"
-    log "[INFO] retry   : ${RETRY_COUNT}"
+    log "[INFO] copy timeout    : ${IMAGE_TIMEOUT}s"
+    log "[INFO] inspect timeout : ${INSPECT_TIMEOUT}s"
+    log "[INFO] retry           : ${RETRY_COUNT}"
     log "[INFO] preferred platforms: ${PREFERRED_PLATFORMS}"
     log "[INFO] log     : ${LOG_FILE}"
 
@@ -207,8 +211,18 @@ detect_sync_platforms() {
     local raw
     local platforms
 
-    if ! raw=$(sudo "${SKOPEO}" inspect --raw "${source}" 2>>"${LOG_FILE}"); then
-        log "[ERROR] Unable to inspect source manifest: ${source}"
+    log "[INFO] Inspecting source manifest (timeout: ${INSPECT_TIMEOUT}s): ${source}"
+
+    if raw=$(timeout --foreground --kill-after=10s "${INSPECT_TIMEOUT}" \
+        sudo "${SKOPEO}" inspect --raw "${source}" 2>>"${LOG_FILE}"); then
+        :
+    else
+        local inspect_ret=$?
+        if [ "${inspect_ret}" -eq 124 ]; then
+            log "[TIMEOUT] Manifest inspection exceeded ${INSPECT_TIMEOUT}s: ${source}"
+        else
+            log "[ERROR] Manifest inspection failed (exit code ${inspect_ret}): ${source}"
+        fi
         return 1
     fi
 
@@ -241,12 +255,22 @@ if found:
 ') || return 1
 
     if [ -z "${platforms}" ]; then
-        platforms=$(sudo "${SKOPEO}" inspect \
+        log "[INFO] Manifest is not an index; detecting single-image architecture"
+
+        if platforms=$(timeout --foreground --kill-after=10s "${INSPECT_TIMEOUT}" \
+            sudo "${SKOPEO}" inspect \
             --format '{{.Os}}/{{.Architecture}}' \
-            "${source}" 2>>"${LOG_FILE}") || {
-                log "[ERROR] Unable to detect image architecture: ${source}"
-                return 1
-            }
+            "${source}" 2>>"${LOG_FILE}"); then
+            :
+        else
+            local inspect_ret=$?
+            if [ "${inspect_ret}" -eq 124 ]; then
+                log "[TIMEOUT] Architecture inspection exceeded ${INSPECT_TIMEOUT}s: ${source}"
+            else
+                log "[ERROR] Architecture inspection failed (exit code ${inspect_ret}): ${source}"
+            fi
+            return 1
+        fi
 
         case ",${PREFERRED_PLATFORMS}," in
             *",${platforms},"*) ;;
@@ -297,7 +321,7 @@ sync_one_image() {
         return 1
     fi
 
-    log "[INFO] Detected platforms: ${sync_platforms}"
+    log "[INFO] Platform detection complete: ${sync_platforms}"
 
     attempt=1
 
