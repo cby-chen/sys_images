@@ -108,19 +108,51 @@ check_environment() {
 
 docker_login() {
 
+    local login_log
+    local login_status
+
     log ""
     log "========================================"
     log "Login registry"
     log "========================================"
 
-    if sudo "${SKOPEO}" login \
-        -u "${HUB_USERNAME}" \
-        -p "${HUB_PASSWORD}" \
-        "${HUB}" >>"${LOG_FILE}" 2>&1
+    # Use stdin rather than -p so the registry password is not exposed in
+    # the process argument list. Keep login output separate for safe diagnosis.
+    login_log=$(mktemp "${LOG_DIR}/registry-login.XXXXXX.log")
+
+    if printf '%s' "${HUB_PASSWORD}" | sudo "${SKOPEO}" login \
+        --username "${HUB_USERNAME}" \
+        --password-stdin \
+        "${HUB}" >"${login_log}" 2>&1
     then
         log "[SUCCESS] Registry login success"
+        rm -f "${login_log}"
     else
-        log "[ERROR] Registry login failed"
+        login_status=$?
+        log "[ERROR] Registry login failed (exit code: ${login_status})"
+        log "[ERROR] Skopeo login diagnostic output (credentials redacted):"
+
+        # Redact credentials before writing command output to the Actions log.
+        HUB_USERNAME="${HUB_USERNAME}" HUB_PASSWORD="${HUB_PASSWORD}" \
+            python3 - "${login_log}" <<'PY'
+import os
+import sys
+
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8", errors="replace") as stream:
+    lines = stream.readlines()
+
+username = os.environ.get("HUB_USERNAME", "")
+password = os.environ.get("HUB_PASSWORD", "")
+for line in lines[-40:]:
+    if password:
+        line = line.replace(password, "***")
+    if username:
+        line = line.replace(username, "***")
+    print(line, end="")
+PY
+        log "[ERROR] End of registry login diagnostic output"
+        rm -f "${login_log}"
         exit 1
     fi
 }
