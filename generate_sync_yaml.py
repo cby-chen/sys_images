@@ -499,11 +499,7 @@ def get_repo_ghcr_tags(image, limit=5):
 
         token_data = token_res.json()
 
-        print(
-            "token_data",
-            token_url,
-            token_data
-        )
+        # Never print registry bearer tokens into public Actions logs.
 
         access_token = token_data['token']
 
