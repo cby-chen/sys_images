@@ -39,7 +39,10 @@ LOG_FILE="${LOG_DIR}/sync-$(date '+%Y%m%d-%H%M%S').log"
 ###############################################################################
 
 log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "${LOG_FILE}"
+    # Always send diagnostics to stderr. Functions such as detect_sync_platforms
+    # return machine-readable data on stdout via command substitution; logging
+    # on stdout would corrupt values passed to Skopeo (e.g. --multi-arch).
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "${LOG_FILE}" >&2
 }
 
 ###############################################################################
