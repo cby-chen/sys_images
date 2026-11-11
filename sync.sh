@@ -20,10 +20,9 @@ RETRY_COUNT=3
 # 每次重试之间等待时间
 RETRY_WAIT=10
 
-# 要同步的 Linux 平台。仅复制这些架构，避免把上游镜像索引中的 OCI
-# attestation / artifact 等非运行时条目一并推送到不兼容的 ACR。
-# 默认保留常见的 amd64 和 arm64；可按需求调整。
-SYNC_PLATFORMS="linux/amd64,linux/arm64"
+# 优先同步的 Linux 平台。每个镜像会先检查上游 Manifest，
+# 只选择实际存在的 amd64 / arm64，避免因缺少某个架构导致整个镜像失败。
+PREFERRED_PLATFORMS="linux/amd64,linux/arm64"
 
 # 日志目录
 LOG_DIR="/tmp/sys_images_sync"
@@ -88,7 +87,7 @@ check_environment() {
     log "[INFO] repo    : ${REPO}"
     log "[INFO] timeout : ${IMAGE_TIMEOUT}s"
     log "[INFO] retry   : ${RETRY_COUNT}"
-    log "[INFO] platforms: ${SYNC_PLATFORMS}"
+    log "[INFO] preferred platforms: ${PREFERRED_PLATFORMS}"
     log "[INFO] log     : ${LOG_FILE}"
 
     # 方案 A 需要新版 Skopeo 的平台筛选参数，提前检查，避免运行到一半才失败。
@@ -195,6 +194,74 @@ PY
 
 
 ###############################################################################
+# 自动检测上游镜像实际支持的平台
+#
+# 对 manifest list / OCI index 读取 manifests[].platform；
+# 对单架构 manifest 则通过 skopeo inspect 读取 Os/Architecture。
+# 只选择本项目计划维护的 linux/amd64 和 linux/arm64。
+###############################################################################
+
+detect_sync_platforms() {
+
+    local source="$1"
+    local raw
+    local platforms
+
+    if ! raw=$(sudo "${SKOPEO}" inspect --raw "${source}" 2>>"${LOG_FILE}"); then
+        log "[ERROR] Unable to inspect source manifest: ${source}"
+        return 1
+    fi
+
+    platforms=$(printf '%s' "${raw}" | python3 -c '
+import json
+import sys
+
+try:
+    manifest = json.load(sys.stdin)
+except Exception as exc:
+    print("Unable to parse manifest: {}".format(exc), file=sys.stderr)
+    sys.exit(2)
+
+preferred = ("linux/amd64", "linux/arm64")
+found = set()
+
+for item in manifest.get("manifests", []) or []:
+    platform = item.get("platform") or {}
+    os_name = platform.get("os")
+    arch = platform.get("architecture")
+    if os_name and arch:
+        value = "{}/{}".format(os_name, arch)
+        if value in preferred:
+            found.add(value)
+
+# 非 manifest-list（单架构镜像）在这里没有 manifests 数组；
+# 交由下面的 skopeo inspect 格式化输出处理。
+if found:
+    print(",".join(value for value in preferred if value in found))
+') || return 1
+
+    if [ -z "${platforms}" ]; then
+        platforms=$(sudo "${SKOPEO}" inspect \
+            --format '{{.Os}}/{{.Architecture}}' \
+            "${source}" 2>>"${LOG_FILE}") || {
+                log "[ERROR] Unable to detect image architecture: ${source}"
+                return 1
+            }
+
+        case ",${PREFERRED_PLATFORMS}," in
+            *",${platforms},"*) ;;
+            *)
+                log "[ERROR] Unsupported or unknown platform '${platforms}' for ${source}"
+                return 1
+                ;;
+        esac
+    fi
+
+    printf '%s' "${platforms}"
+}
+
+
+###############################################################################
 # 同步单个镜像
 ###############################################################################
 
@@ -209,6 +276,7 @@ sync_one_image() {
     local attempt
     local ret
     local image_log
+    local sync_platforms
 
     source="docker://${registry}/${image}:${tag}"
     # target="docker://${HUB}/${REPO}/${image}:${tag}"
@@ -221,6 +289,15 @@ sync_one_image() {
     log "[IMAGE] ${source}"
     log "[IMAGE] -> ${target}"
     log "============================================================"
+
+    # 每个镜像单独检测架构，缺少某个平台时自动降级为实际存在的平台。
+    if ! sync_platforms=$(detect_sync_platforms "${source}"); then
+        log "[FAILED] Platform detection failed: ${source}"
+        FAILED_IMAGES+=("${registry}/${image}:${tag}")
+        return 1
+    fi
+
+    log "[INFO] Detected platforms: ${sync_platforms}"
 
     attempt=1
 
@@ -239,7 +316,7 @@ sync_one_image() {
             sudo "${SKOPEO}" \
             --insecure-policy \
             copy \
-            --multi-arch="${SYNC_PLATFORMS}" \
+            --multi-arch="${sync_platforms}" \
             --strip-removed-platforms \
             --remove-list-signatures \
             "${source}" \
